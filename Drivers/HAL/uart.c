@@ -10,13 +10,13 @@
 
 void uart0_init(void)
 {
-    // cy023 - pin multiplexer set
+    // pin multiplexer set
     PORT_REGS->GROUP[0].PORT_PMUX[2] |= PORT_PMUX_PMUXE_D; // set PA4 as function D (SERCOM0)
     PORT_REGS->GROUP[0].PORT_PINCFG[4] |= PORT_PINCFG_PMUXEN(1); // set PA4 PMUXEN
     PORT_REGS->GROUP[0].PORT_PMUX[3] |= PORT_PMUX_PMUXE_D; // set PA6 as function D (SERCOM0)
     PORT_REGS->GROUP[0].PORT_PINCFG[6] |= PORT_PINCFG_PMUXEN(1); // set PA6 PMUXEN
 
-    // cy023 - uart set
+    // uart set
     SERCOM0_REGS->USART_INT.SERCOM_CTRLA |= SERCOM_USART_INT_CTRLA_MODE_USART_INT_CLK;
     SERCOM0_REGS->USART_INT.SERCOM_CTRLA |= SERCOM_USART_INT_CTRLA_RXPO_PAD2;
     SERCOM0_REGS->USART_INT.SERCOM_CTRLA |= SERCOM_USART_INT_CTRLA_DORD_LSB;
@@ -32,7 +32,7 @@ void uart0_init(void)
 
 void uart0_deinit(void)
 {
-    // cy023 - uart reset
+    // uart reset
     SERCOM0_REGS->USART_INT.SERCOM_CTRLA |= SERCOM_USART_INT_CTRLA_SWRST(1);
     while (SERCOM0_REGS->USART_INT.SERCOM_SYNCBUSY & SERCOM_USART_INT_SYNCBUSY_SWRST_Msk);
 }
