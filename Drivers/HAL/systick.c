@@ -4,11 +4,11 @@
  * @brief Systick driver
  * @date 2022.08.17
  * 
- * // TODO : SysTick_Config() ?
+ * // FIXME: SysTick_Config() ?
  */
 
 #include "systick.h"
-#include "Drivers/SAME54_DFP/same54p20a.h"
+#include "same54p20a.h"
 #include "Drivers/SAME54_BSP/Config/peripheral_clk_config.h"
 #include "Drivers/CMSIS/core_cm4.h"
 

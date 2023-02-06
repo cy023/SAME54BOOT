@@ -4,11 +4,11 @@
  * @date 2022.08.16
  * @brief
  */
-#include <stdio.h>
 
+#include <stdio.h>
+#include "same54p20a.h"
 #include "system.h"
 #include "systick.h"
-#include "same54p20a.h"
 
 /*******************************************************************************
  * Static Functions
