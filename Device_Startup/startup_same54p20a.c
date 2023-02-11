@@ -407,9 +407,6 @@ void Reset_Handler(void)
                 _on_bootstrap();
         }
 
-        PORT_REGS->GROUP[0].PORT_PMUX[1] = PORT_PMUX_PMUXO_B; // PA3 config as VREFA
-        PORT_REGS->GROUP[0].PORT_PINCFG[3] = PORT_PINCFG_PMUXEN(1);
-
         /* Branch to main function */
         main();
 
