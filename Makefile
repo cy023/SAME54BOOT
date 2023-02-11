@@ -12,8 +12,13 @@
 TARGET = main
 
 # Upload Info.
-COMPORT    ?= /dev/ttyACM0
-UPLOAD_HEX ?= test_01_sysnow
+COMPORT    ?=
+# UPLOAD_HEX ?= main
+# UPLOAD_HEX ?= test_00_uart
+# UPLOAD_HEX ?= test_01_gpio
+# UPLOAD_HEX ?= test_02_bootjump
+# UPLOAD_HEX ?= test_03_delay
+UPLOAD_HEX ?= test_04_flash
 
 ## MCU Info.
 CPU       = -mcpu=cortex-m4
@@ -37,13 +42,14 @@ LIBDIRS =
 ## Include Path
 C_INCLUDES  = -I.
 C_INCLUDES += -ICore
-C_INCLUDES += -IDrivers/HAL
+C_INCLUDES += -ICore/boot
+C_INCLUDES += -IDrivers/boot
 C_INCLUDES += -IDrivers/CMSIS
 C_INCLUDES += -IDrivers/SAME54_DFP
 
 ## Source Path
 C_SOURCES += $(wildcard Device_Startup/*.c)
-C_SOURCES += $(wildcard Drivers/HAL/*.c)
+C_SOURCES += $(wildcard Drivers/boot/*.c)
 
 ################################################################################
 # Project Architecture
@@ -62,6 +68,7 @@ VPATH += $(sort $(dir $(C_TESTSRC)))
 
 ## User App Path
 C_APPSRCS = $(wildcard Core/*.c)
+C_APPSRCS += $(wildcard Core/boot/*.c)
 
 ## Unit Test Path
 C_TESTSRC = $(wildcard UnitTest/*.c)
