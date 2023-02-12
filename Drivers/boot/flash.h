@@ -35,7 +35,7 @@ uint16_t flash_get_pgsz(void);
  *      0: successed.
  *      1: failed.
  */
-uint8_t flash_write_app_page(uint32_t dest, uint8_t *buf);
+uint8_t flash_write_app_page(const uint32_t dest, uint8_t *buf);
 
 /**
  * @brief Read a flash page and put it into buf.
@@ -45,7 +45,7 @@ uint8_t flash_write_app_page(uint32_t dest, uint8_t *buf);
  *      0: successed.
  *      1: failed.
  */
-uint8_t flash_read_app_page(uint32_t src, uint8_t *buf);
+uint8_t flash_read_app_page(const uint32_t src, uint8_t *buf);
 
 /**
  * @brief Varify the flash page is the same as page buf.
@@ -55,7 +55,7 @@ uint8_t flash_read_app_page(uint32_t src, uint8_t *buf);
  *      0: the page is the same with buf.
  *      1: the page is different from buf.
  */
-uint8_t flash_verify_app_page(uint32_t src, uint8_t *buf);
+uint8_t flash_verify_app_page(const uint32_t src, uint8_t *buf);
 
 /**
  * @brief Earse the assigned flash section.

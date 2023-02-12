@@ -67,19 +67,19 @@ uint16_t flash_get_pgsz(void)
     return NVMCTRL_FLASH_PAGESIZE;
 }
 
-uint8_t flash_write_app_page(uint32_t dest, uint8_t *buf)
+uint8_t flash_write_app_page(const uint32_t dest, uint8_t *buf)
 {
     NVMCTRL_write_page((uint32_t *)buf, (uint32_t *)(USER_APP_START + dest));
     return NVMCTRL_PROGE;
 }
 
-uint8_t flash_read_app_page(uint32_t src, uint8_t *buf)
+uint8_t flash_read_app_page(const uint32_t src, uint8_t *buf)
 {
     NVMCTRL_read_page((uint32_t *)buf, (uint32_t *)(USER_APP_START + src));
     return NVMCTRL_PROGE;
 }
 
-uint8_t flash_verify_app_page(uint32_t src, uint8_t *buf)
+uint8_t flash_verify_app_page(const uint32_t src, uint8_t *buf)
 {
     uint32_t readbuf[NVMCTRL_FLASH_PAGESIZE / 4] = {0};
     uint32_t *cmpbuf = (uint32_t *)buf;
