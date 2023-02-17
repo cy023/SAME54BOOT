@@ -2,7 +2,7 @@
 # @file   Makefile
 # @author cy023@MVMC-Lab (cyyang023@gmail.com)
 # @date   2022.07.23
-# @brief  Makefile for SAME54ETH project.
+# @brief  Makefile for SAME54_GCC project.
 
 ################################################################################
 # User Settings
