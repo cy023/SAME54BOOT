@@ -48,8 +48,8 @@ uint8_t flash_write_app_page(const uint32_t dest, uint8_t *buf);
 uint8_t flash_read_app_page(const uint32_t src, uint8_t *buf);
 
 /**
- * @brief Varify the flash page is the same as page buf.
- * @param page_addr byte address of the flash page to varify.
+ * @brief Verify the flash page is the same as page buf.
+ * @param page_addr byte address of the flash page to verify.
  * @param buf address of page buffer.
  * @return uint8_t 
  *      0: the page is the same with buf.

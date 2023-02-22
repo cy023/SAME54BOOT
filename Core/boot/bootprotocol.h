@@ -61,7 +61,7 @@
 #define CMD_EEPROM_GET_PGSZ         0x21
 #define CMD_EEPROM_WRITE            0x22
 #define CMD_EEPROM_READ             0x23
-#define CMD_EEPROM_VARIFY           0x24
+#define CMD_EEPROM_VERIFY           0x24
 #define CMD_EEPROM_EARSE_SECTOR     0x25
 #define CMD_EEPROM_EARSE_ALL        0x26
 
@@ -69,7 +69,7 @@
 #define CMD_EXT_FLASH_FCLOSE        0x31
 #define CMD_EXT_FLASH_WRITE         0x32
 #define CMD_EXT_FLASH_READ          0x33
-#define CMD_EXT_FLASH_VARIFY        0x34
+#define CMD_EXT_FLASH_VERIFY        0x34
 #define CMD_EXT_FLASH_EARSE_SECTOR  0x35
 #define CMD_EXT_FLASH_HEX_DEL       0x36
 

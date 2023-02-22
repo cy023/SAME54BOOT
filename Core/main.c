@@ -161,7 +161,7 @@ void bl_command_process()
             case CMD_EXT_FLASH_FCLOSE:          {break;}
             case CMD_EXT_FLASH_WRITE:           {break;}
             case CMD_EXT_FLASH_READ:            {break;}
-            case CMD_EXT_FLASH_VARIFY:          {break;}
+            case CMD_EXT_FLASH_VERIFY:          {break;}
             case CMD_EXT_FLASH_EARSE_SECTOR:    {break;}
             case CMD_EXT_FLASH_HEX_DEL:         {break;}
 

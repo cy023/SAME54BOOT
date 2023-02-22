@@ -33,7 +33,7 @@ int main()
 {
     system_init();
     printf("System Boot.\n");
-    printf("[test03]: flash ...\n");
+    printf("[test04]: flash ...\n");
     
     flash_set_pgsz(256);
     printf("flash_set_pgsz(256);\n");
