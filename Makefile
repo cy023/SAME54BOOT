@@ -18,7 +18,8 @@ COMPORT    ?=
 # UPLOAD_HEX ?= test_01_gpio
 # UPLOAD_HEX ?= test_02_bootjump
 # UPLOAD_HEX ?= test_03_delay
-UPLOAD_HEX ?= test_04_flash
+# UPLOAD_HEX ?= test_04_flash
+UPLOAD_HEX ?= test_05_littlefs
 
 ## MCU Info.
 CPU       = -mcpu=cortex-m4
@@ -46,10 +47,14 @@ C_INCLUDES += -ICore/boot
 C_INCLUDES += -IDrivers/boot
 C_INCLUDES += -IDrivers/CMSIS
 C_INCLUDES += -IDrivers/SAME54_DFP
+C_INCLUDES += -IDrivers/w25q128jv
+C_INCLUDES += -IMiddleware/LittleFS
 
 ## Source Path
 C_SOURCES += $(wildcard Device_Startup/*.c)
 C_SOURCES += $(wildcard Drivers/boot/*.c)
+C_SOURCES += $(wildcard Drivers/w25q128jv/*.c)
+C_SOURCES += $(wildcard Middleware/LittleFS/*.c)
 
 ################################################################################
 # Project Architecture
@@ -155,7 +160,6 @@ clean:
 	-rm -rf $(BUILD_DIR)
 
 upload:
-	sudo chmod 666 $(COMPORT)
 	asaloader prog -p $(COMPORT) -f build/$(UPLOAD_HEX).hex
 
 terminal:
