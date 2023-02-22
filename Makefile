@@ -20,6 +20,7 @@ COMPORT    ?=
 # UPLOAD_HEX ?= test_03_delay
 # UPLOAD_HEX ?= test_04_flash
 UPLOAD_HEX ?= test_05_littlefs
+# UPLOAD_HEX ?= test_06_fs_rw_image
 
 ## MCU Info.
 CPU       = -mcpu=cortex-m4
