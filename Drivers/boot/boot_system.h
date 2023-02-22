@@ -11,57 +11,35 @@
 
 #include <stdint.h>
 
-/**
- * @brief Clock peripheral initialization.
- *
- *  - XOSC1 PIN enable
- *  - GCLK2 12MHz
- *  - GCLK2 for SERCOM0 enable
- *  - MCLK for SERCOM0 enable
- */
-void system_clock_init(void);
+/*******************************************************************************
+ * Peripheral Driver Enable
+ ******************************************************************************/
+#ifndef BOOT_GPIO_DRIVER_ENABLE
+#define BOOT_GPIO_DRIVER_ENABLE   1
+#endif
 
-/**
- * @brief Clock peripheral initialization.
- */
-void system_clock_deinit(void);
+#ifndef BOOT_CLOCK_DRIVER_ENABLE
+#define BOOT_CLOCK_DRIVER_ENABLE  1
+#endif
 
-/**
- * @brief GPIO peripheral initialization.
- *
- *  - PA7 for prog/run dectect pin 
- */
-void system_gpio_init(void);
+#ifndef BOOT_UART_DRIVER_ENABLE
+#define BOOT_UART_DRIVER_ENABLE   1
+#endif
 
-/**
- * @brief GPIO peripheral deinitialization.
- */
-void system_gpio_deinit(void);
+#ifndef BOOT_SPI_DRIVER_ENABLE
+#define BOOT_SPI_DRIVER_ENABLE    1
+#endif
 
-/**
- * @brief UART peripheral initialization.
- *
- *  - MSB first
- *  - TX -> PAD[0]
- *  - RX -> PAD[2]
- *  - no parity
- *  - Asychronous
- *  - Internal clock
- *  - BAUD = 12MHz / 16 * (1 - 62180/65535) = 38400
- */
-void system_uart0_init(void);
-
-/**
- * @brief UART peripheral deinitialization.
- */
-void system_uart0_deinit(void);
-
+/*******************************************************************************
+ * Public Function
+ ******************************************************************************/
 /**
  * @brief System initialization.
  * 
  *  - system_gpio_init()
  *  - system_clock_init()
  *  - system_uart_init()
+ *  - system_spi_init()
  */
 void system_init(void);
 
@@ -71,6 +49,7 @@ void system_init(void);
  *  - system_gpio_deinit()
  *  - system_clock_deinit()
  *  - system_uart_deinit()
+ *  - system_spi_deinit()
  */
 void system_deinit(void);
 
