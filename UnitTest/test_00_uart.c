@@ -21,7 +21,7 @@ int main()
     char c;
     while (1) {
         printf("Please input a character: \n");
-        c = uart0_getc();
+        c = com_channel_getc();
         printf("Your input character is %c\n\n", c);
     }
     return 0;
