@@ -15,10 +15,10 @@
 uint8_t buffer[300] = {0};
 
 /* Waiting for 'CMD_CHK_PROTOCOL' command and response ACK or NACK */
-void establish_connection();
+void establish_connection(void);
 
 /* Waiting for programmer's command and response ACK or NACK */
-void bl_command_process();
+void bl_command_process(void);
 
 int main(void)
 {
@@ -31,7 +31,7 @@ int main(void)
     }
 }
 
-void establish_connection()
+void establish_connection(void)
 {
     bl_packet_t pac = { .cmd = 0,
                         .length = 0,
@@ -53,7 +53,7 @@ void establish_connection()
     }
 }
 
-void bl_command_process()
+void bl_command_process(void)
 {
     bl_packet_t pac = { .cmd = 0,
                         .length = 0,
@@ -75,7 +75,7 @@ void bl_command_process()
             case CMD_PROG_CHK_DEVICE: {
                 pac.length = 2;
                 pac.data[0] = SUCCESSED; // ACK
-                pac.data[1] = (uint8_t)D_M4_V1;
+                pac.data[1] = (uint8_t)D_ATSAME54_DEVB;
                 put_packet(&pac);
                 break;
             }

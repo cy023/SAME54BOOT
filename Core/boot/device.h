@@ -22,11 +22,8 @@
 #define BOOTLOADER_SIZE     (0x00001000UL)
 
 enum device_table {
-    D_M128_V1 = 1,
-    D_M128_V2,
-    D_M128_V3,
-    D_M3_V1,
-    D_M4_V1
+    D_ATSAME54_DEVB = 1,
+    D_NUM487KM_DEVB
 };
 
 #endif /* DEVICE_H */
