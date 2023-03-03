@@ -12,7 +12,10 @@
 #include "flash.h"
 #include "bootprotocol.h"
 
-uint8_t buffer[300] = {0};
+#include "lfs.h"
+#include "lfs_port.h"
+
+uint8_t buffer[260] = {0};
 
 /* Waiting for 'CMD_CHK_PROTOCOL' command and response ACK or NACK */
 void establish_connection(void);
@@ -20,11 +23,43 @@ void establish_connection(void);
 /* Waiting for programmer's command and response ACK or NACK */
 void bl_command_process(void);
 
+/* Boot the program. Load the application image from /boot partition */
+void boot_from_fs(void);
+
+void shell_start(void);
+
 int main(void)
 {
+    char select;
     system_init();
-    if (!system_is_prog_mode())
-        system_jump_to_app();
+    if (!system_is_prog_mode()) {
+        shell_start();
+        printf("Boot partition select ...\n");
+        printf("(1) Primary Slot\n");
+        printf("(2) Secondary Slot (Boot from flash)\n");
+        printf("\033[0;32;32m\x1B[1m$ \033[m");
+        select = com_channel_getc();
+
+        switch (select)
+        {
+            case '1': {
+                system_jump_to_app();
+                break;
+            }
+            case '2': {
+                printf("Waiting for boot ...\n");
+                boot_from_fs();
+                printf("Boot from secondary slot successed!\n");
+                printf("\033[0;32;32m\x1B[1m=======================\033[m\n");
+                system_jump_to_app();
+                break;
+            }
+            default: {
+                printf("Boot Failed. Please Reset the computer.\n");
+                break;
+            }
+        }
+    }
     while (1) {
         establish_connection();
         bl_command_process();
@@ -100,7 +135,11 @@ void bl_command_process(void)
                 break;
             }
 
-            case CMD_PROG_EXT_TO_INT: {break;}
+            case CMD_PROG_EXT_FLASH_BOOT: {
+                boot_from_fs();
+                send_ACK(&pac);
+                break;
+            }
 
             case CMD_FLASH_SET_PGSZ: {
                 // TODO: only support 256 byte page size.
@@ -157,23 +196,113 @@ void bl_command_process(void)
                 break;
             }
 
-            case CMD_EXT_FLASH_FOPEN:           {break;}
-            case CMD_EXT_FLASH_FCLOSE:          {break;}
-            case CMD_EXT_FLASH_WRITE:           {break;}
+            /******************************************************************/
+
+            case CMD_EXT_FLASH_FOPEN: {
+                // mount the filesystem
+                int err = lfs_mount(&lfs_w25q128jv, &cfg);
+
+                // reformat if we can't mount the filesystem, this should only happen on the first boot
+                if (err) {
+                    lfs_format(&lfs_w25q128jv, &cfg);
+                    lfs_mount(&lfs_w25q128jv, &cfg);
+                }
+
+                lfs_remove(&lfs_w25q128jv, "/boot");
+
+                // Open boot partition
+                lfs_file_open(&lfs_w25q128jv, &lfs_file_w25q128jv, "/boot", LFS_O_WRONLY | LFS_O_APPEND | LFS_O_CREAT);
+
+                send_ACK(&pac);
+                break;
+            }
+            case CMD_EXT_FLASH_FCLOSE: {
+                // Write boot image done!
+                lfs_file_close(&lfs_w25q128jv, &lfs_file_w25q128jv);
+
+                // release any resources we were using
+                lfs_unmount(&lfs_w25q128jv);
+
+                send_ACK(&pac);
+                break;
+            }
+            case CMD_EXT_FLASH_WRITE: {
+                lfs_file_rewind(&lfs_w25q128jv, &lfs_file_w25q128jv);
+                lfs_file_write(&lfs_w25q128jv, &lfs_file_w25q128jv, (uint8_t *)pac.data, 256 + 4);
+                send_ACK(&pac);
+                break;
+            }
             case CMD_EXT_FLASH_READ:            {break;}
             case CMD_EXT_FLASH_VERIFY:          {break;}
             case CMD_EXT_FLASH_EARSE_SECTOR:    {break;}
             case CMD_EXT_FLASH_HEX_DEL:         {break;}
+
+            /******************************************************************/
 
             case CMD_EEPROM_SET_PGSZ:           {break;}
             case CMD_EEPROM_GET_PGSZ:           {break;}
             case CMD_EEPROM_WRITE:              {break;}
             case CMD_EEPROM_READ:               {break;}
             case CMD_EEPROM_EARSE_ALL:          {break;}
+
+            /******************************************************************/
+
             default: { // NOT supported command
                 send_NACK(&pac);
                 break;
             }
         }
     }
+}
+
+void boot_from_fs(void)
+{
+    memset(buffer, 0, 260);
+    flash_earse_app_all();
+
+    // mount the filesystem
+    int err = lfs_mount(&lfs_w25q128jv, &cfg);
+
+    // reformat if we can't mount the filesystem, this should only happen on the first boot
+    if (err) {
+        lfs_format(&lfs_w25q128jv, &cfg);
+        lfs_mount(&lfs_w25q128jv, &cfg);
+    }
+
+    // Open boot partition
+    lfs_file_open(&lfs_w25q128jv, &lfs_file_w25q128jv, "/boot", LFS_O_RDONLY | LFS_O_CREAT);
+
+    lfs_soff_t fsize = lfs_file_size(&lfs_w25q128jv, &lfs_file_w25q128jv);
+    // printf("/boot size is %ld\n", fsize);
+
+    while (fsize >= 260) {
+        lfs_file_read(&lfs_w25q128jv, &lfs_file_w25q128jv, buffer, 256 + 4);
+        flash_write_app_page(*(uint32_t *)buffer, (uint8_t *)(buffer + 4));
+        fsize -= 260;
+    }
+    if (fsize) {
+        memset(buffer, 0, 260);
+        lfs_file_read(&lfs_w25q128jv, &lfs_file_w25q128jv, buffer, fsize);
+        flash_write_app_page(*(uint32_t *)buffer, (uint8_t *)(buffer + 4));
+    }
+
+    // Read and verify boot image
+    lfs_file_close(&lfs_w25q128jv, &lfs_file_w25q128jv);
+
+    // release any resources we were using
+    lfs_unmount(&lfs_w25q128jv);
+}
+
+void shell_start(void)
+{
+    printf("  ==============================================================================================\n");
+    printf("  ||     ____    ____  ____   ____  ____    ____   ______    _____            __              ||\n");
+    printf("  ||    |_   \\  /   _||_  _| |_  _||_   \\  /   _|.' ___  |  |_   _|          [  |             ||\n");
+    printf("  ||      |   \\/   |    \\ \\   / /    |   \\/   | / .'   \\_|    | |      ,--.   | |.--.         ||\n");
+    printf("  ||      | |\\  /| |     \\ \\ / /     | |\\  /| | | |           | |   _ `'_\\ :  | '/'`\\ \\       ||\n");
+    printf("  ||     _| |_\\/_| |_     \\ ' /     _| |_\\/_| |_\\ `.___.'\\   _| |__/ |// | |, |  \\__/ | _     ||\n");
+    printf("  ||    |_____||_____|     \\_/     |_____||_____|`.____ .'  |________|\\'-;__/[__;.__.' (_)    ||\n");
+    printf("  ||                                                                                          ||\n");
+    printf("  ||                                                                               by cy023.  ||\n");
+    printf("  ==============================================================================================\n\n");
 }

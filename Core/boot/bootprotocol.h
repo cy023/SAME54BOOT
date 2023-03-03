@@ -47,7 +47,7 @@
 #define CMD_PROG_END                0x03
 #define CMD_PROG_END_AND_GO_APP     0x04
 #define CMD_PROG_SET_GO_APP_DELAY   0x05
-#define CMD_PROG_EXT_TO_INT         0x06
+#define CMD_PROG_EXT_FLASH_BOOT     0x06
 
 #define CMD_FLASH_SET_PGSZ          0x10
 #define CMD_FLASH_GET_PGSZ          0x11
