@@ -64,6 +64,10 @@ int main(void)
 
     // ---------------------------------------------------------------------- //
 
+    lfs_remove(&lfs_w25q128jv, "/boot");
+
+    // ---------------------------------------------------------------------- //
+
     // Open boot partition
     lfs_file_open(&lfs_w25q128jv, &lfs_file_w25q128jv, "/boot", LFS_O_WRONLY | LFS_O_APPEND | LFS_O_CREAT);
 
@@ -113,6 +117,17 @@ int main(void)
 
     lfs_file_read(&lfs_w25q128jv, &lfs_file_w25q128jv, image_buf, sizeof(image_buf));
     printBuf();
+
+    // Read and verify boot image
+    lfs_file_close(&lfs_w25q128jv, &lfs_file_w25q128jv);
+
+    // ---------------------------------------------------------------------- //
+
+    // Open boot partition
+    lfs_file_open(&lfs_w25q128jv, &lfs_file_w25q128jv, "/boot", LFS_O_RDONLY | LFS_O_CREAT);
+
+    lfs_soff_t fsize = lfs_file_size(&lfs_w25q128jv, &lfs_file_w25q128jv);
+    printf("/boot size is %ld\n", fsize);
 
     // Read and verify boot image
     lfs_file_close(&lfs_w25q128jv, &lfs_file_w25q128jv);
