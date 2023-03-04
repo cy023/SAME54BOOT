@@ -35,30 +35,29 @@ int main(void)
     if (!system_is_prog_mode()) {
         shell_start();
         printf("Boot partition select ...\n");
-        printf("(1) Primary Slot\n");
-        printf("(2) Secondary Slot (Boot from flash)\n");
-        printf("\033[0;32;32m\x1B[1m$ \033[m");
+        printf("(1) Primary Slot (Boot from external flash)\n");
+        printf("(2) Secondary Slot (Boot from external flash)\n");
+        printf("> \n");
         select = com_channel_getc();
 
+        printf("Waiting for boot up ...\n");
         switch (select)
         {
             case '1': {
-                system_jump_to_app();
                 break;
             }
             case '2': {
-                printf("Waiting for boot ...\n");
                 boot_from_fs();
                 printf("Boot from secondary slot successed!\n");
-                printf("\033[0;32;32m\x1B[1m=======================\033[m\n");
-                system_jump_to_app();
                 break;
             }
             default: {
                 printf("Boot Failed. Please Reset the computer.\n");
-                break;
+                return 0;
             }
         }
+        printf("\033[0;32;32m\x1B[1m=======================\033[m\n");
+        system_jump_to_app();
     }
     while (1) {
         establish_connection();
@@ -78,7 +77,7 @@ void establish_connection(void)
         if (pac.cmd == CMD_CHK_PROTOCOL) {
             pac.length = 2;
             pac.data[0] = SUCCESSED;
-            pac.data[1] = 2;
+            pac.data[1] = 1;
             put_packet(&pac);
             return;
         }
@@ -103,7 +102,7 @@ void bl_command_process(void)
             case CMD_CHK_PROTOCOL: {
                 pac.length = 2;
                 pac.data[0] = SUCCESSED; // ACK
-                pac.data[1] = 2;
+                pac.data[1] = 1;
                 put_packet(&pac);
                 break;
             }
@@ -295,14 +294,13 @@ void boot_from_fs(void)
 
 void shell_start(void)
 {
-    printf("  ==============================================================================================\n");
-    printf("  ||     ____    ____  ____   ____  ____    ____   ______    _____            __              ||\n");
-    printf("  ||    |_   \\  /   _||_  _| |_  _||_   \\  /   _|.' ___  |  |_   _|          [  |             ||\n");
-    printf("  ||      |   \\/   |    \\ \\   / /    |   \\/   | / .'   \\_|    | |      ,--.   | |.--.         ||\n");
-    printf("  ||      | |\\  /| |     \\ \\ / /     | |\\  /| | | |           | |   _ `'_\\ :  | '/'`\\ \\       ||\n");
-    printf("  ||     _| |_\\/_| |_     \\ ' /     _| |_\\/_| |_\\ `.___.'\\   _| |__/ |// | |, |  \\__/ | _     ||\n");
-    printf("  ||    |_____||_____|     \\_/     |_____||_____|`.____ .'  |________|\\'-;__/[__;.__.' (_)    ||\n");
-    printf("  ||                                                                                          ||\n");
-    printf("  ||                                                                               by cy023.  ||\n");
-    printf("  ==============================================================================================\n\n");
+    printf("  =============================================================\n");
+    printf("  ||     ____              _      __  __                     ||\n");
+    printf("  ||    | __ )  ___   ___ | |_   |  \\/  | ___ _ __  _   _    ||\n");
+    printf("  ||    |  _ \\ / _ \\ / _ \\| __|  | |\\/| |/ _ \\ '_ \\| | | |   ||\n");
+    printf("  ||    | |_) | (_) | (_) | |_   | |  | |  __/ | | | |_| |   ||\n");
+    printf("  ||    |____/ \\___/ \\___/ \\__|  |_|  |_|\\___|_| |_|\\__,_|   ||\n");
+    printf("  ||                                                         ||\n");
+    printf("  ||                                              by cy023.  ||\n");
+    printf("  =============================================================\n");
 }

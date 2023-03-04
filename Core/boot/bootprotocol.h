@@ -40,7 +40,7 @@
 #define ACK                         0
 #define NACK                        1
 
-/* ---- asaprog protocol commands for v2 ----------------------------------- */
+/* ---- asaprog protocol commands ------------------------------------------ */
 #define CMD_CHK_PROTOCOL            0xFA
 
 #define CMD_PROG_CHK_DEVICE         0x02
