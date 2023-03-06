@@ -7,7 +7,6 @@
 
 #include "commuch.h"
 #include "bootprotocol.h"
-#include "boot_system.h"
 #include "flash.h"
 #include "device.h"
 
@@ -108,7 +107,6 @@ void bl_command_process(void)
     bl_packet_t pac = { .cmd = 0,
                         .length = 0,
                         .data = bl_buffer };
-    uint16_t go_app_delay = 50;
 
     while (1) {
         if (get_packet(&pac))
@@ -135,18 +133,10 @@ void bl_command_process(void)
             }
             case CMD_PROG_END_AND_GO_APP: {
                 send_ACK(&pac);
-                system_delay_ms(go_app_delay);
-                system_jump_to_app();
                 return;
             }
             case CMD_PROG_SET_GO_APP_DELAY: {
-                uint16_t d = *((uint16_t *)pac.data);
-                if (d > 10000) {  // delay to long.
-                    send_NACK(&pac);
-                } else {
-                    go_app_delay = d;
-                    send_ACK(&pac);
-                }
+                send_ACK(&pac);
                 break;
             }
 
