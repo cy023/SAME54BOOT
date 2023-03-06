@@ -119,4 +119,22 @@ void send_ACK(bl_packet_t *packet);
  */
 void send_NACK(bl_packet_t *packet);
 
+/**
+ * @brief Waiting for 'CMD_CHK_PROTOCOL' command and response ACK or NACK
+ *
+ */
+void establish_connection(void);
+
+/**
+ * @brief Waiting for programmer's command and response ACK or NACK
+ *
+ */
+void bl_command_process(void);
+
+/**
+ * @brief Boot the program. Load the application image from /boot partition
+ *
+ */
+void boot_from_fs(void);
+
 #endif  /* BOOTPROTOCOL_H */
