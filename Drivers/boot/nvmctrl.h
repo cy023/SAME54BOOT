@@ -7,8 +7,8 @@
  * The API only supports for address in User App Section.
  */
 
-#ifndef FLASH_H
-#define FLASH_H
+#ifndef NVMCTRL_H
+#define NVMCTRL_H
 
 #include <stdint.h>
 
@@ -74,4 +74,4 @@ uint8_t flash_earse_sector(uint8_t sector_num);
  */
 uint8_t flash_earse_app_all(void);
 
-#endif /* FLASH_H */
+#endif /* NVMCTRL_H */
