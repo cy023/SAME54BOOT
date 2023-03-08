@@ -11,7 +11,8 @@
 #include "lfs.h"
 #include "lfs_port.h"
 
-uint8_t image_buf[256] = {0};
+#define BUFFSIZE     512
+uint8_t image_buf[BUFFSIZE] = {0};
 
 void shell_start(void)
 {
@@ -33,14 +34,14 @@ void prompt(void)
 
 void printBuf(void)
 {
-    printf("==========        Buffer        ==========\n");
+    printf("\n\t====================== printPage ======================\n");
     for (int i = 0; i < 32; i++) {
-        printf("\t");
-        for (int j = 0; j < 8; j++)
-            printf("%02x ", image_buf[8 * i + j]);
-        printf("\n");
+        printf("\t|   ");
+        for (int j = 0; j < 16; j++)
+            printf("%02x ", image_buf[(i << 4) + j]);
+        printf("  |\n");
     }
-    printf("==========================================\n");
+    printf("\t=======================================================\n");
 }
 
 int main(void)
@@ -71,25 +72,25 @@ int main(void)
     // Open boot partition
     lfs_file_open(&lfs_w25q128jv, &lfs_file_w25q128jv, "/boot", LFS_O_WRONLY | LFS_O_APPEND | LFS_O_CREAT);
 
-    for (int i = 0; i < 256; i++) {
+    for (int i = 0; i < BUFFSIZE; i++) {
         image_buf[i] = 0;
     }
     lfs_file_rewind(&lfs_w25q128jv, &lfs_file_w25q128jv);
     lfs_file_write(&lfs_w25q128jv, &lfs_file_w25q128jv, image_buf, sizeof(image_buf));
 
-    for (int i = 0; i < 256; i++) {
+    for (int i = 0; i < BUFFSIZE; i++) {
         image_buf[i] = 1;
     }
     lfs_file_rewind(&lfs_w25q128jv, &lfs_file_w25q128jv);
     lfs_file_write(&lfs_w25q128jv, &lfs_file_w25q128jv, image_buf, sizeof(image_buf));
 
-    for (int i = 0; i < 256; i++) {
+    for (int i = 0; i < BUFFSIZE; i++) {
         image_buf[i] = 2;
     }
     lfs_file_rewind(&lfs_w25q128jv, &lfs_file_w25q128jv);
     lfs_file_write(&lfs_w25q128jv, &lfs_file_w25q128jv, image_buf, sizeof(image_buf));
 
-    for (int i = 0; i < 256; i++) {
+    for (int i = 0; i < BUFFSIZE; i++) {
         image_buf[i] = 3;
     }
     lfs_file_rewind(&lfs_w25q128jv, &lfs_file_w25q128jv);
@@ -102,9 +103,6 @@ int main(void)
 
     // Open boot partition
     lfs_file_open(&lfs_w25q128jv, &lfs_file_w25q128jv, "/boot", LFS_O_RDONLY | LFS_O_CREAT);
-
-    lfs_file_read(&lfs_w25q128jv, &lfs_file_w25q128jv, image_buf, sizeof(image_buf));
-    printBuf();
 
     lfs_file_read(&lfs_w25q128jv, &lfs_file_w25q128jv, image_buf, sizeof(image_buf));
     printBuf();
