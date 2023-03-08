@@ -7,13 +7,14 @@
 
 #include "commuch.h"
 #include "bootprotocol.h"
-#include "flash.h"
+#include "nvmctrl.h"
 #include "device.h"
 
 #include "lfs.h"
 #include "lfs_port.h"
 
-static uint8_t bl_buffer[260] = {0};
+#define BUFFERSIZE  516
+static uint8_t bl_buffer[BUFFERSIZE] = {0};
 
 /*******************************************************************************
  * Basic Operation
@@ -140,7 +141,7 @@ void bl_command_process(void)
                 break;
             }
             case CMD_FLASH_SET_PGSZ: {
-                // TODO: only support 256 byte page size.
+                // TODO: only support 512 byte page size.
                 if (flash_set_pgsz(*((uint16_t *)pac.data)))
                     send_NACK(&pac);
                 else
@@ -226,7 +227,7 @@ void bl_command_process(void)
             }
             case CMD_EXT_FLASH_WRITE: {
                 lfs_file_rewind(&lfs_w25q128jv, &lfs_file_w25q128jv);
-                lfs_file_write(&lfs_w25q128jv, &lfs_file_w25q128jv, (uint8_t *)pac.data, 256 + 4);
+                lfs_file_write(&lfs_w25q128jv, &lfs_file_w25q128jv, (uint8_t *)pac.data, BUFFERSIZE);
                 send_ACK(&pac);
                 break;
             }
@@ -255,8 +256,8 @@ void bl_command_process(void)
 
 void boot_from_fs(void)
 {
-    memset(bl_buffer, 0, 260);
     flash_earse_app_all();
+    memset(bl_buffer, 0, BUFFERSIZE);
 
     int err = lfs_mount(&lfs_w25q128jv, &cfg);
 
@@ -271,13 +272,13 @@ void boot_from_fs(void)
     lfs_soff_t fsize = lfs_file_size(&lfs_w25q128jv, &lfs_file_w25q128jv);
     // printf("/boot size is %ld\n", fsize);
 
-    while (fsize >= 260) {
-        lfs_file_read(&lfs_w25q128jv, &lfs_file_w25q128jv, bl_buffer, 256 + 4);
+    while (fsize >= BUFFERSIZE) {
+        lfs_file_read(&lfs_w25q128jv, &lfs_file_w25q128jv, bl_buffer, BUFFERSIZE);
         flash_write_app_page(*(uint32_t *)bl_buffer, (uint8_t *)(bl_buffer + 4));
-        fsize -= 260;
+        fsize -= BUFFERSIZE;
     }
     if (fsize) {
-        memset(bl_buffer, 0, 260);
+        memset(bl_buffer, 0, BUFFERSIZE);
         lfs_file_read(&lfs_w25q128jv, &lfs_file_w25q128jv, bl_buffer, fsize);
         flash_write_app_page(*(uint32_t *)bl_buffer, (uint8_t *)(bl_buffer + 4));
     }
