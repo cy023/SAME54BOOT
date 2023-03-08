@@ -15,31 +15,31 @@
 
 static uint8_t bl_buffer[260] = {0};
 
+/*******************************************************************************
+ * Basic Operation
+ ******************************************************************************/
+
 uint8_t get_packet(bl_packet_t *packet)
 {
-    uint8_t len_h, len_l;
     uint8_t cmd;
+    uint8_t len_h, len_l;
     uint8_t chksum = 0;
 
-    for (int i = 0; i < 3; i++)
-        if (com_channel_getc() != HEADER)
-            return FAILED;
+    if (com_channel_getc() != HEADER) return FAILED;
+    if (com_channel_getc() != HEADER) return FAILED;
+    if (com_channel_getc() != HEADER) return FAILED;
 
     cmd = com_channel_getc();
-
-    if (com_channel_getc() != TOKEN)
-        return FAILED;
-
     len_h = com_channel_getc();
     len_l = com_channel_getc();
-    packet->length = (len_h << 8) + len_l;
+
     packet->cmd = cmd;
+    packet->length = (len_h << 8) | len_l;
 
     for (uint16_t i = 0; i < packet->length; i++) {
         packet->data[i] = com_channel_getc();
         chksum += packet->data[i];
     }
-
     if (com_channel_getc() != chksum)   
         return FAILED;
 
@@ -49,12 +49,11 @@ uint8_t get_packet(bl_packet_t *packet)
 uint8_t put_packet(bl_packet_t *packet)
 {
     uint8_t chksum = 0;
-    
+
     com_channel_putc(HEADER);
     com_channel_putc(HEADER);
     com_channel_putc(HEADER);
     com_channel_putc(packet->cmd);
-    com_channel_putc(TOKEN);
     com_channel_putc(packet->length >> 8);
     com_channel_putc(packet->length & 0xFF);
 
@@ -79,6 +78,10 @@ void send_NACK(bl_packet_t *packet)
     packet->data[0] = NACK;
     put_packet(packet);
 }
+
+/*******************************************************************************
+ * Boot Protocol
+ ******************************************************************************/
 
 void establish_connection(void)
 {
@@ -116,11 +119,11 @@ void bl_command_process(void)
             case CMD_CHK_PROTOCOL: {
                 pac.length = 2;
                 pac.data[0] = SUCCESSED; // ACK
-                pac.data[1] = 1;
+                pac.data[1] = 1; // protocol vresion
                 put_packet(&pac);
                 break;
             }
-            case CMD_PROG_CHK_DEVICE: {
+            case CMD_CHK_DEVICE: {
                 pac.length = 2;
                 pac.data[0] = SUCCESSED; // ACK
                 pac.data[1] = (uint8_t)D_ATSAME54_DEVB;
@@ -131,21 +134,11 @@ void bl_command_process(void)
                 send_ACK(&pac);
                 return;
             }
-            case CMD_PROG_END_AND_GO_APP: {
-                send_ACK(&pac);
-                return;
-            }
-            case CMD_PROG_SET_GO_APP_DELAY: {
-                send_ACK(&pac);
-                break;
-            }
-
             case CMD_PROG_EXT_FLASH_BOOT: {
                 boot_from_fs();
                 send_ACK(&pac);
                 break;
             }
-
             case CMD_FLASH_SET_PGSZ: {
                 // TODO: only support 256 byte page size.
                 if (flash_set_pgsz(*((uint16_t *)pac.data)))
@@ -265,7 +258,6 @@ void boot_from_fs(void)
     memset(bl_buffer, 0, 260);
     flash_earse_app_all();
 
-    // mount the filesystem
     int err = lfs_mount(&lfs_w25q128jv, &cfg);
 
     // reformat if we can't mount the filesystem, this should only happen on the first boot
@@ -274,7 +266,6 @@ void boot_from_fs(void)
         lfs_mount(&lfs_w25q128jv, &cfg);
     }
 
-    // Open boot partition
     lfs_file_open(&lfs_w25q128jv, &lfs_file_w25q128jv, "/boot", LFS_O_RDONLY | LFS_O_CREAT);
 
     lfs_soff_t fsize = lfs_file_size(&lfs_w25q128jv, &lfs_file_w25q128jv);
@@ -291,9 +282,6 @@ void boot_from_fs(void)
         flash_write_app_page(*(uint32_t *)bl_buffer, (uint8_t *)(bl_buffer + 4));
     }
 
-    // Read and verify boot image
     lfs_file_close(&lfs_w25q128jv, &lfs_file_w25q128jv);
-
-    // release any resources we were using
     lfs_unmount(&lfs_w25q128jv);
 }

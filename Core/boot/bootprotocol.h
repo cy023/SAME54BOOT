@@ -7,10 +7,10 @@
  *   0                   1                   2                   3
  *   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *  |                     HEADER                    |     COMMAND   |
+ *  |                     HEADER                    |    COMMAND    |
  *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *  |     TOCKEN    |             LENGTH            |               |
- *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+               +
+ *  |            LENGTH             |                               |
+ *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               +
  *  |                                                               |
  *  +                                                               +
  *  |                     DATA (variable length)                    |
@@ -18,9 +18,8 @@
  *  |                                               |    CHECKSUM   |
  *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * 
- * HEADER   : 0xFCFCFC
+ * HEADER   : 0xA5A5A5
  * COMMAND  : See details in the following macros
- * TOCKEN   : 0x01
  * LENGTH   : Dara length
  * DATA     : Variable length
  * CHECKSUM : sum(data) % 255
@@ -30,9 +29,8 @@
 #ifndef BOOTPROTOCOL_H
 #define BOOTPROTOCOL_H
 
-/* ---- asaprog protocol const defines ------------------------------------- */
-#define HEADER                      0xFC
-#define TOKEN                       0x01
+/* bootprotocol common macros */
+#define HEADER                      0xA5
 
 #define SUCCESSED                   0
 #define FAILED                      1
@@ -40,14 +38,11 @@
 #define ACK                         0
 #define NACK                        1
 
-/* ---- asaprog protocol commands ------------------------------------------ */
-#define CMD_CHK_PROTOCOL            0xFA
-
-#define CMD_PROG_CHK_DEVICE         0x02
+/* bootprotocol commands */
+#define CMD_CHK_PROTOCOL            0x01
+#define CMD_CHK_DEVICE              0x02
 #define CMD_PROG_END                0x03
-#define CMD_PROG_END_AND_GO_APP     0x04
-#define CMD_PROG_SET_GO_APP_DELAY   0x05
-#define CMD_PROG_EXT_FLASH_BOOT     0x06
+#define CMD_PROG_EXT_FLASH_BOOT     0x04
 
 #define CMD_FLASH_SET_PGSZ          0x10
 #define CMD_FLASH_GET_PGSZ          0x11
