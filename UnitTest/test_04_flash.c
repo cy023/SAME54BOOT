@@ -12,7 +12,7 @@
 #include "same54p20a.h"
 #include <stdio.h>
 #include "boot_system.h"
-#include "flash.h"
+#include "nvmctrl.h"
 
 #define BUFFSIZE    512
 uint8_t page_buffer[BUFFSIZE] = {0};

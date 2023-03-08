@@ -10,7 +10,7 @@
 #include "device.h"
 #include "boot_system.h"
 #include "commuch.h"
-#include "flash.h"
+#include "nvmctrl.h"
 #include "bootprotocol.h"
 
 void shell_start(void)
