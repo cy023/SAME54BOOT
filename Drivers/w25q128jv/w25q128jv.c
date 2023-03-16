@@ -114,7 +114,7 @@ static uint8_t w25q128jv_spi(uint8_t data)
  */
 static inline void __w25q128jv_CS_ENABLE(void)
 {
-    PORT_REGS->GROUP[1].PORT_OUTCLR |= PORT_OUTCLR_OUTCLR(1 << 2);
+    PORT_REGS->GROUP[2].PORT_OUTCLR |= PORT_OUTCLR_OUTCLR(1 << 6);
 }
 
 /**
@@ -123,7 +123,7 @@ static inline void __w25q128jv_CS_ENABLE(void)
  */
 static inline void __w25q128jv_CS_DISABLE(void)
 {
-    PORT_REGS->GROUP[1].PORT_OUTSET |= PORT_OUTSET_OUTSET(1 << 2);
+    PORT_REGS->GROUP[2].PORT_OUTSET |= PORT_OUTSET_OUTSET(1 << 6);
 }
 
 /*******************************************************************************

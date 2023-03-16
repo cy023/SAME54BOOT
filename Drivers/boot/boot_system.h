@@ -78,4 +78,16 @@ uint8_t system_is_prog_mode(void);
  */
 void system_delay_ms(uint32_t ms);
 
+/**
+ * @brief Trun on the Boot LED.
+ *
+ *  NOTE: When MCU is botting from flash. The Boot LED will be turn on.
+ */
+void bootLED_on(void);
+
+/**
+ * @brief Trun off the Boot LED.
+ */
+void bootLED_off(void);
+
 #endif  /* BOOT_SYSTEM_H */

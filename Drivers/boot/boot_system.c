@@ -163,23 +163,22 @@ static void system_uart0_deinit(void)
  *  FLASH_MOSI  : PC04
  *  FLASH_SCK   : PC05
  *  FLASH_MISO  : PC07
- *  FLASH_CS    : PB02
+ *  FLASH_CS    : PC06
  *
  */
 static void system_spi_init(void)
 {
     // SPI6 pin multiplexer set
     // PC4, PC5, PC6, PC7 as function C (SERCOM6)
-    // TODO: change flash cs pin from PB2 to PC6.
     PORT_REGS->GROUP[2].PORT_PMUX[2] |= (PORT_PMUX_PMUXE_C | PORT_PMUX_PMUXO_C);
     PORT_REGS->GROUP[2].PORT_PMUX[3] |= (PORT_PMUX_PMUXE_C | PORT_PMUX_PMUXO_C);
     PORT_REGS->GROUP[2].PORT_PINCFG[4] |= PORT_PINCFG_PMUXEN(1); // set PC4 PMUXEN
     PORT_REGS->GROUP[2].PORT_PINCFG[5] |= PORT_PINCFG_PMUXEN(1); // set PC5 PMUXEN
     PORT_REGS->GROUP[2].PORT_PINCFG[7] |= PORT_PINCFG_PMUXEN(1); // set PC7 PMUXEN
 
-    // Set PB2 as output, for FLASH_CS.
-    PORT_REGS->GROUP[1].PORT_DIRSET |= PORT_DIRSET_DIRSET(1 << 2);
-    PORT_REGS->GROUP[1].PORT_OUTSET |= PORT_OUTSET_OUTSET(1 << 2);
+    // Set PC6 as output, for FLASH_CS.
+    PORT_REGS->GROUP[2].PORT_DIRSET |= PORT_DIRSET_DIRSET(1 << 6);
+    PORT_REGS->GROUP[2].PORT_OUTSET |= PORT_OUTSET_OUTSET(1 << 6);
 
     // Peripheral clock set
     GCLK_REGS->GCLK_PCHCTRL[36] |= GCLK_PCHCTRL_GEN_GCLK2;  // select gclk 2 as source
@@ -207,14 +206,34 @@ static void system_spi_deinit(void)
     MCLK_REGS->MCLK_APBDMASK &= ~MCLK_APBDMASK_SERCOM6(1);
     GCLK_REGS->GCLK_PCHCTRL[36] = 0;
 
-    PORT_REGS->GROUP[1].PORT_OUTCLR |= PORT_OUTCLR_OUTCLR(1 << 2);
-    PORT_REGS->GROUP[1].PORT_DIRCLR |= PORT_DIRCLR_DIRCLR(1 << 2);
+    PORT_REGS->GROUP[2].PORT_OUTCLR |= PORT_OUTCLR_OUTCLR(1 << 6);
+    PORT_REGS->GROUP[2].PORT_DIRCLR |= PORT_DIRCLR_DIRCLR(1 << 6);
 
     PORT_REGS->GROUP[2].PORT_PINCFG[4] &= ~PORT_PINCFG_PMUXEN(1);
     PORT_REGS->GROUP[2].PORT_PINCFG[5] &= ~PORT_PINCFG_PMUXEN(1);
     PORT_REGS->GROUP[2].PORT_PINCFG[7] &= ~PORT_PINCFG_PMUXEN(1);
     PORT_REGS->GROUP[2].PORT_PMUX[2] &= ~(PORT_PMUX_PMUXE_C | PORT_PMUX_PMUXO_C);
     PORT_REGS->GROUP[2].PORT_PMUX[3] &= ~(PORT_PMUX_PMUXE_C | PORT_PMUX_PMUXO_C);
+}
+
+/**
+ * @brief Boot LED initialization
+ *  BOOT_LED pin: PB02 (output)
+ */
+static void bootLED_init(void)
+{
+    // Set PB2 as output, for Boot LED.
+    PORT_REGS->GROUP[1].PORT_DIRSET |= PORT_DIRSET_DIRSET(1 << 2);
+    PORT_REGS->GROUP[1].PORT_OUTSET |= PORT_OUTSET_OUTSET(1 << 2);
+}
+
+/**
+ * @brief Boot LED deinitialization
+ */
+static void bootLED_deinit(void)
+{
+    PORT_REGS->GROUP[1].PORT_OUTCLR |= PORT_OUTCLR_OUTCLR(1 << 2);
+    PORT_REGS->GROUP[1].PORT_DIRCLR |= PORT_DIRCLR_DIRCLR(1 << 2);
 }
 
 /*******************************************************************************
@@ -238,6 +257,8 @@ void system_init(void)
 #if defined(BOOT_SPI_DRIVER_ENABLE) && (BOOT_SPI_DRIVER_ENABLE + 0)
     system_spi_init();
 #endif
+
+    bootLED_init();
 }
 
 void system_deinit(void)
@@ -246,6 +267,7 @@ void system_deinit(void)
     system_uart0_deinit();
     system_clock_deinit();
     system_gpio_deinit();
+    bootLED_deinit();
 }
 
 /*******************************************************************************
@@ -321,4 +343,14 @@ void system_delay_ms(uint32_t ms)
         // 1 ms loop with -O0 optimization.
         for (i = 2400; i > 0; i--) {;}
     }
+}
+
+void bootLED_on(void)
+{
+    PORT_REGS->GROUP[1].PORT_OUTCLR |= PORT_OUTCLR_OUTCLR(1 << 2);
+}
+
+void bootLED_off(void)
+{
+    PORT_REGS->GROUP[1].PORT_OUTSET |= PORT_OUTSET_OUTSET(1 << 2);
 }

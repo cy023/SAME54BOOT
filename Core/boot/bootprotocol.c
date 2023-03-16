@@ -7,6 +7,7 @@
 
 #include "commuch.h"
 #include "bootprotocol.h"
+#include "boot_system.h"
 #include "nvmctrl.h"
 #include "device.h"
 
@@ -256,6 +257,8 @@ void bl_command_process(void)
 
 void boot_from_fs(void)
 {
+    bootLED_on();
+
     flash_earse_app_all();
     memset(bl_buffer, 0, BUFFERSIZE);
 
@@ -285,4 +288,6 @@ void boot_from_fs(void)
 
     lfs_file_close(&lfs_w25q128jv, &lfs_file_w25q128jv);
     lfs_unmount(&lfs_w25q128jv);
+
+    bootLED_off();
 }
