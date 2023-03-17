@@ -32,7 +32,7 @@ uint8_t select_boot_partition(void)
     char select;
     shell_start();
     printf("Boot partition select ...\n");
-    printf("(1) Primary Slot (Boot from external flash)\n");
+    printf("(1) Primary Slot (Boot from internal flash)\n");
     printf("(2) Secondary Slot (Boot from external flash)\n");
     printf("> \n");
     select = com_channel_getc();
