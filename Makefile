@@ -118,7 +118,7 @@ CFLAGS += $(C_INCLUDES)
 
 ## Assembler Options
 ASMFLAGS  = $(MCUFLAGS)
-ASMFLAGS += -x assembler-with-cpp -Wa,-g$(DEBUG)
+ASMFLAGS += -x assembler-with-cpp -Wa,$(DEBUG)
 ASMFLAGS += $(CFLAGS)
 
 ## Link Options
