@@ -181,15 +181,15 @@ void bl_command_process(void)
                     send_ACK(&pac);
                 break;
             }
-            case CMD_FLASH_EARSE_SECTOR: { // TODO:
-                if (flash_earse_sector(*(uint16_t *)pac.data))
+            case CMD_FLASH_ERASE_SECTOR: { // TODO:
+                if (flash_erase_sector(*(uint16_t *)pac.data))
                     send_NACK(&pac);
                 else
                     send_ACK(&pac);
                 break;
             }
-            case CMD_FLASH_EARSE_ALL: {
-                if (flash_earse_app_all())
+            case CMD_FLASH_ERASE_ALL: {
+                if (flash_erase_app_all())
                     send_NACK(&pac);
                 else
                     send_ACK(&pac);
@@ -234,7 +234,7 @@ void bl_command_process(void)
             }
             case CMD_EXT_FLASH_READ:            {break;}
             case CMD_EXT_FLASH_VERIFY:          {break;}
-            case CMD_EXT_FLASH_EARSE_SECTOR:    {break;}
+            case CMD_EXT_FLASH_ERASE_SECTOR:    {break;}
             case CMD_EXT_FLASH_HEX_DEL:         {break;}
 
             /******************************************************************/
@@ -243,7 +243,7 @@ void bl_command_process(void)
             case CMD_EEPROM_GET_PGSZ:           {break;}
             case CMD_EEPROM_WRITE:              {break;}
             case CMD_EEPROM_READ:               {break;}
-            case CMD_EEPROM_EARSE_ALL:          {break;}
+            case CMD_EEPROM_ERASE_ALL:          {break;}
 
             /******************************************************************/
 
@@ -259,7 +259,7 @@ void boot_from_fs(void)
 {
     bootLED_on();
 
-    flash_earse_app_all();
+    flash_erase_app_all();
     memset(bl_buffer, 0, BUFFERSIZE);
 
     int err = lfs_mount(&lfs_w25q128jv, &cfg);

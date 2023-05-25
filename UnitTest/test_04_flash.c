@@ -5,7 +5,7 @@
  * @brief 
  * 
  * NOTICE: If run this test code in .App section, 
- *          the flash_earse_app_all() boundary should be modified.
+ *          the flash_erase_app_all() boundary should be modified.
  *         Otherwise, it will erase itself.
  */
 
@@ -62,7 +62,7 @@ int main()
     printPage("Before Erase all");
     // This action will erase all the app section !
     // Including this program !
-    flash_earse_app_all();
+    flash_erase_app_all();
     flash_read_app_page(0x00010000UL, page_buffer);
     printPage("Read after Erase all");
 

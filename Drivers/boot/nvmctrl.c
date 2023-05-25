@@ -91,7 +91,7 @@ uint8_t flash_verify_app_page(const uint32_t src, uint8_t *buf)
     return NVMCTRL_PROGE;
 }
 
-uint8_t flash_earse_sector(uint8_t sector_num)
+uint8_t flash_erase_sector(uint8_t sector_num)
 {
     uint32_t addr = sector_num * NVMCTRL_FLASH_BLOCKSIZE;
     nvmctrl_erase_block(addr);
@@ -99,7 +99,7 @@ uint8_t flash_earse_sector(uint8_t sector_num)
 }
 
 // TODO: Erase 512 Bytes
-uint8_t flash_earse_app_all(void)
+uint8_t flash_erase_app_all(void)
 {
     for (uint32_t addr = USER_APP_START; addr < USER_APP_END; addr += NVMCTRL_FLASH_BLOCKSIZE) 
         nvmctrl_erase_block(addr);
