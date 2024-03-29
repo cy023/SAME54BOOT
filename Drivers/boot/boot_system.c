@@ -26,28 +26,30 @@ static void system_clock_init(void)
     PORT_REGS->GROUP[1].PORT_PMUX[11] = PORT_PMUX_PMUXO_N | PORT_PMUX_PMUXE_N;
     PORT_REGS->GROUP[1].PORT_PINCFG[22] |= PORT_PINCFG_PMUXEN(1);
     PORT_REGS->GROUP[1].PORT_PINCFG[23] |= PORT_PINCFG_PMUXEN(1);
-    
+
     // XOSC1 set
-    OSCCTRL_REGS->OSCCTRL_XOSCCTRL[1] &= OSCCTRL_XOSCCTRL_ONDEMAND(0);  // oscillator always on
-    OSCCTRL_REGS->OSCCTRL_XOSCCTRL[1] |= OSCCTRL_XOSCCTRL_IMULT(4);     // oscillator current multiplier
-    OSCCTRL_REGS->OSCCTRL_XOSCCTRL[1] |= OSCCTRL_XOSCCTRL_IPTAT(3);     // oscillator current reference
-    OSCCTRL_REGS->OSCCTRL_XOSCCTRL[1] |= OSCCTRL_XOSCCTRL_XTALEN(1);    // internal oscillator circuit enable
-    OSCCTRL_REGS->OSCCTRL_XOSCCTRL[1] |= OSCCTRL_XOSCCTRL_ENABLE(1);    // oscillator enable
-    while (!(OSCCTRL_REGS->OSCCTRL_STATUS & OSCCTRL_STATUS_XOSCRDY1_Msk)); // wait for XOSC1 ready
+    OSCCTRL_REGS->OSCCTRL_XOSCCTRL[1] &= OSCCTRL_XOSCCTRL_ONDEMAND(0); // oscillator always on
+    OSCCTRL_REGS->OSCCTRL_XOSCCTRL[1] |= OSCCTRL_XOSCCTRL_IMULT(4);    // oscillator current multiplier
+    OSCCTRL_REGS->OSCCTRL_XOSCCTRL[1] |= OSCCTRL_XOSCCTRL_IPTAT(3);    // oscillator current reference
+    OSCCTRL_REGS->OSCCTRL_XOSCCTRL[1] |= OSCCTRL_XOSCCTRL_XTALEN(1);   // internal oscillator circuit enable
+    OSCCTRL_REGS->OSCCTRL_XOSCCTRL[1] |= OSCCTRL_XOSCCTRL_ENABLE(1);   // oscillator enable
+    while (!(OSCCTRL_REGS->OSCCTRL_STATUS & OSCCTRL_STATUS_XOSCRDY1_Msk))
+        ; // wait for XOSC1 ready
 
     // GCLK 2 set External oscillator 12MHz
-    GCLK_REGS->GCLK_GENCTRL[2] |= GCLK_GENCTRL_DIV(1); // gclk 2 output = src clk / 1
-    GCLK_REGS->GCLK_GENCTRL[2] |= GCLK_GENCTRL_SRC(1); // gclk 2 use xosc1 as source
+    GCLK_REGS->GCLK_GENCTRL[2] |= GCLK_GENCTRL_DIV(1);  // gclk 2 output = src clk / 1
+    GCLK_REGS->GCLK_GENCTRL[2] |= GCLK_GENCTRL_SRC(1);  // gclk 2 use xosc1 as source
     GCLK_REGS->GCLK_GENCTRL[2] |= GCLK_GENCTRL_IDC(1);
-	GCLK_REGS->GCLK_GENCTRL[2] |= GCLK_GENCTRL_GENEN(1);
-    while (GCLK_REGS->GCLK_SYNCBUSY & GCLK_SYNCBUSY_GENCTRL_GCLK2); // wait gclk 2 sync
+    GCLK_REGS->GCLK_GENCTRL[2] |= GCLK_GENCTRL_GENEN(1);
+    while (GCLK_REGS->GCLK_SYNCBUSY & GCLK_SYNCBUSY_GENCTRL_GCLK2)
+        ;  // wait gclk 2 sync
 
     // Peripheral clock set
-    GCLK_REGS->GCLK_PCHCTRL[7]  |= GCLK_PCHCTRL_GEN_GCLK2;   // select gclk 2 as source
-    GCLK_REGS->GCLK_PCHCTRL[7]  |= GCLK_PCHCTRL_CHEN(1);     // open sercom 0 clock
+    GCLK_REGS->GCLK_PCHCTRL[7] |= GCLK_PCHCTRL_GEN_GCLK2; // select source
+    GCLK_REGS->GCLK_PCHCTRL[7] |= GCLK_PCHCTRL_CHEN(1);   // open sercom 0 clock
 
     // MCLK set
-    MCLK_REGS->MCLK_APBAMASK |= MCLK_APBAMASK_SERCOM0(1);    // sercom 0 bus open
+    MCLK_REGS->MCLK_APBAMASK |= MCLK_APBAMASK_SERCOM0(1); // sercom 0 bus open
 }
 
 /**
@@ -56,23 +58,26 @@ static void system_clock_init(void)
 static void system_clock_deinit(void)
 {
     // MCLK reset
-    MCLK_REGS->MCLK_APBAMASK &= ~MCLK_APBAMASK_SERCOM0(1);    // sercom 0 bus close
+    MCLK_REGS->MCLK_APBAMASK &= ~MCLK_APBAMASK_SERCOM0(1); // sercom 0 bus close
 
     // GCLK reset
     GCLK_REGS->GCLK_CTRLA = GCLK_CTRLA_SWRST(1);
-    while (GCLK_REGS->GCLK_SYNCBUSY & GCLK_SYNCBUSY_SWRST_Msk);
+    while (GCLK_REGS->GCLK_SYNCBUSY & GCLK_SYNCBUSY_SWRST_Msk)
+        ;
 
     // XOSC1 reset
-    // The oscillator is running when a peripheral is requesting the oscillator to be used as a clock source.
-    // The oscillator is not running if no peripheral is requesting the clock source.
-    OSCCTRL_REGS->OSCCTRL_XOSCCTRL[1] |= OSCCTRL_XOSCCTRL_ONDEMAND(1); 
+    // The oscillator is running when a peripheral is requesting the oscillator
+    // to be used as a clock source. The oscillator is not running if no
+    // peripheral is requesting the clock source.
+    OSCCTRL_REGS->OSCCTRL_XOSCCTRL[1] |= OSCCTRL_XOSCCTRL_ONDEMAND(1);
     OSCCTRL_REGS->OSCCTRL_XOSCCTRL[1] &= ~OSCCTRL_XOSCCTRL_IMULT(4);
     OSCCTRL_REGS->OSCCTRL_XOSCCTRL[1] &= ~OSCCTRL_XOSCCTRL_IPTAT(3);
     OSCCTRL_REGS->OSCCTRL_XOSCCTRL[1] &= ~OSCCTRL_XOSCCTRL_XTALEN(1);
     OSCCTRL_REGS->OSCCTRL_XOSCCTRL[1] &= ~OSCCTRL_XOSCCTRL_ENABLE(1);
 
     // XOSC1 pin multiplxer reset
-    PORT_REGS->GROUP[1].PORT_PMUX[11] &= ~(PORT_PMUX_PMUXO_N | PORT_PMUX_PMUXE_N);
+    PORT_REGS->GROUP[1].PORT_PMUX[11] &=
+        ~(PORT_PMUX_PMUXO_N | PORT_PMUX_PMUXE_N);
     PORT_REGS->GROUP[1].PORT_PINCFG[22] &= ~PORT_PINCFG_PMUXEN(1);
     PORT_REGS->GROUP[1].PORT_PINCFG[23] &= ~PORT_PINCFG_PMUXEN(1);
 }
@@ -86,9 +91,10 @@ static void system_gpio_init(void)
 {
     // set PA7 as prog/run detect pin
     PORT_REGS->GROUP[0].PORT_DIRCLR |= PORT_DIRCLR_DIRCLR(1 << 7);  // clear DIR
-    PORT_REGS->GROUP[0].PORT_CTRL |= PORT_CTRL_SAMPLING(1 << 7);    // Continuous sampling.
-    PORT_REGS->GROUP[0].PORT_PINCFG[7] |= PORT_PINCFG_PMUXEN(1);    //
-    PORT_REGS->GROUP[0].PORT_PINCFG[7] |= PORT_PINCFG_INEN(1);      // IN enable
+    PORT_REGS->GROUP[0].PORT_CTRL |=
+        PORT_CTRL_SAMPLING(1 << 7);  // Continuous sampling.
+    PORT_REGS->GROUP[0].PORT_PINCFG[7] |= PORT_PINCFG_PMUXEN(1);  //
+    PORT_REGS->GROUP[0].PORT_PINCFG[7] |= PORT_PINCFG_INEN(1);    // IN enable
 }
 
 /**
@@ -97,7 +103,8 @@ static void system_gpio_init(void)
 static void system_gpio_deinit(void)
 {
     // PA7 prog/run dectect pin reset
-    // PORT_REGS->GROUP[0].PORT_DIRCLR &= ~PORT_DIRCLR_DIRCLR(1 << 7); // no effect
+    // PORT_REGS->GROUP[0].PORT_DIRCLR &= ~PORT_DIRCLR_DIRCLR(1 << 7); // no
+    // effect
     PORT_REGS->GROUP[0].PORT_CTRL &= ~PORT_CTRL_SAMPLING(1 << 7);
     PORT_REGS->GROUP[0].PORT_PINCFG[7] &= ~PORT_PINCFG_PMUXEN(1);
     PORT_REGS->GROUP[0].PORT_PINCFG[7] &= ~PORT_PINCFG_INEN(1);
@@ -117,24 +124,31 @@ static void system_gpio_deinit(void)
 static void system_uart0_init(void)
 {
     // uart0 pin multiplexer set
-    PORT_REGS->GROUP[0].PORT_PMUX[2] |= PORT_PMUX_PMUXE_D; // set PA4 as function D (SERCOM0)
-    PORT_REGS->GROUP[0].PORT_PINCFG[4] |= PORT_PINCFG_PMUXEN(1); // set PA4 PMUXEN
-    PORT_REGS->GROUP[0].PORT_PMUX[3] |= PORT_PMUX_PMUXE_D; // set PA6 as function D (SERCOM0)
-    PORT_REGS->GROUP[0].PORT_PINCFG[6] |= PORT_PINCFG_PMUXEN(1); // set PA6 PMUXEN
+    PORT_REGS->GROUP[0].PORT_PMUX[2] |= PORT_PMUX_PMUXE_D; // set PA4 as SERCOM0
+    PORT_REGS->GROUP[0].PORT_PINCFG[4] |= PORT_PINCFG_PMUXEN(1); // PA4
+    PORT_REGS->GROUP[0].PORT_PMUX[3] |= PORT_PMUX_PMUXE_D; // set PA6 as SERCOM0
+    PORT_REGS->GROUP[0].PORT_PINCFG[6] |= PORT_PINCFG_PMUXEN(1); // PA6
 
     // uart0 init
-    SERCOM0_REGS->USART_INT.SERCOM_CTRLA |= SERCOM_USART_INT_CTRLA_MODE_USART_INT_CLK;
+    SERCOM0_REGS->USART_INT.SERCOM_CTRLA |=
+        SERCOM_USART_INT_CTRLA_MODE_USART_INT_CLK;
     SERCOM0_REGS->USART_INT.SERCOM_CTRLA |= SERCOM_USART_INT_CTRLA_RXPO_PAD2;
     SERCOM0_REGS->USART_INT.SERCOM_CTRLA |= SERCOM_USART_INT_CTRLA_DORD_LSB;
     SERCOM0_REGS->USART_INT.SERCOM_BAUD = 62180;
 
     SERCOM0_REGS->USART_INT.SERCOM_CTRLB |= SERCOM_USART_INT_CTRLB_RXEN(1);
-    while (SERCOM0_REGS->USART_INT.SERCOM_SYNCBUSY & SERCOM_USART_INT_SYNCBUSY_CTRLB_Msk);
+    while (SERCOM0_REGS->USART_INT.SERCOM_SYNCBUSY &
+           SERCOM_USART_INT_SYNCBUSY_CTRLB_Msk)
+        ;
     SERCOM0_REGS->USART_INT.SERCOM_CTRLB |= SERCOM_USART_INT_CTRLB_TXEN(1);
-    while (SERCOM0_REGS->USART_INT.SERCOM_SYNCBUSY & SERCOM_USART_INT_SYNCBUSY_CTRLB_Msk);
+    while (SERCOM0_REGS->USART_INT.SERCOM_SYNCBUSY &
+           SERCOM_USART_INT_SYNCBUSY_CTRLB_Msk)
+        ;
 
     SERCOM0_REGS->USART_INT.SERCOM_CTRLA |= SERCOM_USART_INT_CTRLA_ENABLE(1);
-    while (SERCOM0_REGS->USART_INT.SERCOM_SYNCBUSY & SERCOM_USART_INT_SYNCBUSY_ENABLE_Msk);
+    while (SERCOM0_REGS->USART_INT.SERCOM_SYNCBUSY &
+           SERCOM_USART_INT_SYNCBUSY_ENABLE_Msk)
+        ;
 }
 
 /**
@@ -144,17 +158,21 @@ static void system_uart0_deinit(void)
 {
     // uart reset
     SERCOM0_REGS->USART_INT.SERCOM_CTRLA &= ~SERCOM_USART_INT_CTRLA_ENABLE(1);
-    while (SERCOM0_REGS->USART_INT.SERCOM_SYNCBUSY & \
-            (SERCOM_USART_INT_SYNCBUSY_SWRST_Msk | SERCOM_USART_INT_SYNCBUSY_ENABLE_Msk));
+    while (SERCOM0_REGS->USART_INT.SERCOM_SYNCBUSY &
+           (SERCOM_USART_INT_SYNCBUSY_SWRST_Msk |
+            SERCOM_USART_INT_SYNCBUSY_ENABLE_Msk))
+        ;
 
     SERCOM0_REGS->USART_INT.SERCOM_CTRLA |= SERCOM_USART_INT_CTRLA_SWRST(1);
-    while (SERCOM0_REGS->USART_INT.SERCOM_SYNCBUSY & SERCOM_USART_INT_SYNCBUSY_SWRST_Msk);
+    while (SERCOM0_REGS->USART_INT.SERCOM_SYNCBUSY &
+           SERCOM_USART_INT_SYNCBUSY_SWRST_Msk)
+        ;
 
     // uart0 pin reset
-    PORT_REGS->GROUP[0].PORT_PMUX[2] &= ~PORT_PMUX_PMUXE_D; // set PA4 as function D (SERCOM0)
-    PORT_REGS->GROUP[0].PORT_PINCFG[4] &= ~PORT_PINCFG_PMUXEN(1); // set PA4 PMUXEN
-    PORT_REGS->GROUP[0].PORT_PMUX[3] &= ~PORT_PMUX_PMUXE_D; // set PA6 as function D (SERCOM0)
-    PORT_REGS->GROUP[0].PORT_PINCFG[6] &= ~PORT_PINCFG_PMUXEN(1); // set PA6 PMUXEN
+    PORT_REGS->GROUP[0].PORT_PMUX[2] &= ~PORT_PMUX_PMUXE_D;// set PA4 as SERCOM0
+    PORT_REGS->GROUP[0].PORT_PINCFG[4] &= ~PORT_PINCFG_PMUXEN(1); // PA4
+    PORT_REGS->GROUP[0].PORT_PMUX[3] &= ~PORT_PMUX_PMUXE_D;// set PA6 as SERCOM0
+    PORT_REGS->GROUP[0].PORT_PINCFG[6] &= ~PORT_PINCFG_PMUXEN(1); // PA6
 }
 
 /**
@@ -172,20 +190,20 @@ static void system_spi_init(void)
     // PC4, PC5, PC6, PC7 as function C (SERCOM6)
     PORT_REGS->GROUP[2].PORT_PMUX[2] |= (PORT_PMUX_PMUXE_C | PORT_PMUX_PMUXO_C);
     PORT_REGS->GROUP[2].PORT_PMUX[3] |= (PORT_PMUX_PMUXE_C | PORT_PMUX_PMUXO_C);
-    PORT_REGS->GROUP[2].PORT_PINCFG[4] |= PORT_PINCFG_PMUXEN(1); // set PC4 PMUXEN
-    PORT_REGS->GROUP[2].PORT_PINCFG[5] |= PORT_PINCFG_PMUXEN(1); // set PC5 PMUXEN
-    PORT_REGS->GROUP[2].PORT_PINCFG[7] |= PORT_PINCFG_PMUXEN(1); // set PC7 PMUXEN
+    PORT_REGS->GROUP[2].PORT_PINCFG[4] |= PORT_PINCFG_PMUXEN(1); // PC4
+    PORT_REGS->GROUP[2].PORT_PINCFG[5] |= PORT_PINCFG_PMUXEN(1); // PC5
+    PORT_REGS->GROUP[2].PORT_PINCFG[7] |= PORT_PINCFG_PMUXEN(1); // PC7
 
     // Set PC6 as output, for FLASH_CS.
     PORT_REGS->GROUP[2].PORT_DIRSET |= PORT_DIRSET_DIRSET(1 << 6);
     PORT_REGS->GROUP[2].PORT_OUTSET |= PORT_OUTSET_OUTSET(1 << 6);
 
     // Peripheral clock set
-    GCLK_REGS->GCLK_PCHCTRL[36] |= GCLK_PCHCTRL_GEN_GCLK2;  // select gclk 2 as source
+    GCLK_REGS->GCLK_PCHCTRL[36] |= GCLK_PCHCTRL_GEN_GCLK2; // select source
     GCLK_REGS->GCLK_PCHCTRL[36] |= GCLK_PCHCTRL_CHEN(1);
 
     // MCLK set
-    MCLK_REGS->MCLK_APBDMASK |= MCLK_APBDMASK_SERCOM6(1);   // sercom 6 bus open
+    MCLK_REGS->MCLK_APBDMASK |= MCLK_APBDMASK_SERCOM6(1);  // sercom 6 bus open
 
     // SPI setting
     SERCOM6_REGS->SPIM.SERCOM_CTRLB |= SERCOM_SPIM_CTRLB_RXEN(1);
@@ -212,8 +230,10 @@ static void system_spi_deinit(void)
     PORT_REGS->GROUP[2].PORT_PINCFG[4] &= ~PORT_PINCFG_PMUXEN(1);
     PORT_REGS->GROUP[2].PORT_PINCFG[5] &= ~PORT_PINCFG_PMUXEN(1);
     PORT_REGS->GROUP[2].PORT_PINCFG[7] &= ~PORT_PINCFG_PMUXEN(1);
-    PORT_REGS->GROUP[2].PORT_PMUX[2] &= ~(PORT_PMUX_PMUXE_C | PORT_PMUX_PMUXO_C);
-    PORT_REGS->GROUP[2].PORT_PMUX[3] &= ~(PORT_PMUX_PMUXE_C | PORT_PMUX_PMUXO_C);
+    PORT_REGS->GROUP[2].PORT_PMUX[2] &=
+        ~(PORT_PMUX_PMUXE_C | PORT_PMUX_PMUXO_C);
+    PORT_REGS->GROUP[2].PORT_PMUX[3] &=
+        ~(PORT_PMUX_PMUXE_C | PORT_PMUX_PMUXO_C);
 }
 
 /**
@@ -277,10 +297,10 @@ void system_deinit(void)
 __attribute__((always_inline)) static inline void jump2app(void)
 {
     // Setting the stack pointer.
-    __set_MSP(*(uint32_t *)USER_APP_START);
+    __set_MSP(*(uint32_t *) USER_APP_START);
 
     // SP + 4: Reset Handler Offset.
-    __ASM volatile ("BLX %0" : : "r" (*(uint32_t *)(USER_APP_START + 4)));
+    __ASM volatile("BLX %0" : : "r"(*(uint32_t *) (USER_APP_START + 4)));
 }
 
 void system_jump_to_app(void)
@@ -314,8 +334,10 @@ void system_jump_to_app(void)
     NVIC->ICPR[7] = 0xFFFFFFFF;
 
     SysTick->CTRL = 0;
-    SCB->ICSR |= SCB_ICSR_PENDSTCLR_Msk; // Removes the pending status of the SysTick exception
-    SCB->SHCSR &= ~(SCB_SHCSR_USGFAULTENA_Msk | SCB_SHCSR_BUSFAULTENA_Msk | SCB_SHCSR_MEMFAULTENA_Msk);
+    SCB->ICSR |= SCB_ICSR_PENDSTCLR_Msk;  // Removes the pending status of the
+                                          // SysTick exception
+    SCB->SHCSR &= ~(SCB_SHCSR_USGFAULTENA_Msk | SCB_SHCSR_BUSFAULTENA_Msk |
+                    SCB_SHCSR_MEMFAULTENA_Msk);
 
     __DSB();
     __ISB();
@@ -341,7 +363,9 @@ void system_delay_ms(uint32_t ms)
     volatile uint32_t i;
     for (delay = ms; delay > 0; delay--) {
         // 1 ms loop with -O0 optimization.
-        for (i = 2400; i > 0; i--) {;}
+        for (i = 2400; i > 0; i--) {
+            ;
+        }
     }
 }
 

@@ -3,7 +3,7 @@
  * @author cy023
  * @date 2023.02.06
  * @brief
- * 
+ *
  * NOTICE: No buffer bounds checks are done here.
  */
 
@@ -15,38 +15,46 @@
 /*******************************************************************************
  * Macro
  ******************************************************************************/
-#define NVMCTRL_FLASH_PAGESIZE          (512U)
-#define NVMCTRL_FLASH_BLOCKSIZE         (8192U)     // 16 * page
+#define NVMCTRL_FLASH_PAGESIZE  (512U)
+#define NVMCTRL_FLASH_BLOCKSIZE (8192U)  // 16 * page
 
-#define NVMCTRL_PROGE   ((NVMCTRL_REGS->NVMCTRL_INTFLAG & NVMCTRL_INTFLAG_PROGE_Msk) >> 2)
+#define NVMCTRL_PROGE \
+    ((NVMCTRL_REGS->NVMCTRL_INTFLAG & NVMCTRL_INTFLAG_PROGE_Msk) >> 2)
 
-#define FAILED                          1
-#define SUCCESSED                       0
+#define FAILED    1
+#define SUCCESSED 0
 
 /*******************************************************************************
  * Static inline function
  ******************************************************************************/
 static inline void nvmctrl_write_page(uint32_t *data, uint32_t *dest)
 {
-    while (!(NVMCTRL_REGS->NVMCTRL_STATUS & NVMCTRL_STATUS_READY_Msk));
-    NVMCTRL_REGS->NVMCTRL_CTRLB |= NVMCTRL_CTRLB_CMD_PBC | NVMCTRL_CTRLB_CMDEX_KEY;
+    while (!(NVMCTRL_REGS->NVMCTRL_STATUS & NVMCTRL_STATUS_READY_Msk))
+        ;
+    NVMCTRL_REGS->NVMCTRL_CTRLB |=
+        NVMCTRL_CTRLB_CMD_PBC | NVMCTRL_CTRLB_CMDEX_KEY;
 
-    while (!(NVMCTRL_REGS->NVMCTRL_STATUS & NVMCTRL_STATUS_READY_Msk));
+    while (!(NVMCTRL_REGS->NVMCTRL_STATUS & NVMCTRL_STATUS_READY_Msk))
+        ;
     for (uint32_t i = 0; i < (NVMCTRL_FLASH_PAGESIZE / 4); i++)
         *dest++ = data[i];
-    NVMCTRL_REGS->NVMCTRL_CTRLB |= NVMCTRL_CTRLB_CMD_WP | NVMCTRL_CTRLB_CMDEX_KEY;
+    NVMCTRL_REGS->NVMCTRL_CTRLB |=
+        NVMCTRL_CTRLB_CMD_WP | NVMCTRL_CTRLB_CMDEX_KEY;
 }
 
 static inline void nvmctrl_erase_block(uint32_t address)
 {
-    while (!(NVMCTRL_REGS->NVMCTRL_STATUS & NVMCTRL_STATUS_READY_Msk));
+    while (!(NVMCTRL_REGS->NVMCTRL_STATUS & NVMCTRL_STATUS_READY_Msk))
+        ;
     NVMCTRL_REGS->NVMCTRL_ADDR = address;
-    NVMCTRL_REGS->NVMCTRL_CTRLB |= NVMCTRL_CTRLB_CMD_EB | NVMCTRL_CTRLB_CMDEX_KEY;
+    NVMCTRL_REGS->NVMCTRL_CTRLB |=
+        NVMCTRL_CTRLB_CMD_EB | NVMCTRL_CTRLB_CMDEX_KEY;
 }
 
 static inline void nvmctrl_read_page(uint32_t *data, uint32_t *src)
 {
-    while (!(NVMCTRL_REGS->NVMCTRL_STATUS & NVMCTRL_STATUS_READY_Msk));
+    while (!(NVMCTRL_REGS->NVMCTRL_STATUS & NVMCTRL_STATUS_READY_Msk))
+        ;
     for (uint32_t i = 0; i < (NVMCTRL_FLASH_PAGESIZE / 4); i++)
         data[i] = src[i];
 }
@@ -56,7 +64,7 @@ static inline void nvmctrl_read_page(uint32_t *data, uint32_t *src)
  ******************************************************************************/
 uint8_t flash_set_pgsz(uint16_t size)
 {
-    if (size != 512) // TODO: only support 512 bytes now
+    if (size != 512)  // TODO: only support 512 bytes now
         return FAILED;
     else
         return SUCCESSED;
@@ -69,20 +77,20 @@ uint16_t flash_get_pgsz(void)
 
 uint8_t flash_write_app_page(const uint32_t dest, uint8_t *buf)
 {
-    nvmctrl_write_page((uint32_t *)buf, (uint32_t *) dest);
+    nvmctrl_write_page((uint32_t *) buf, (uint32_t *) dest);
     return NVMCTRL_PROGE;
 }
 
 uint8_t flash_read_app_page(const uint32_t src, uint8_t *buf)
 {
-    nvmctrl_read_page((uint32_t *)buf, (uint32_t *) src);
+    nvmctrl_read_page((uint32_t *) buf, (uint32_t *) src);
     return NVMCTRL_PROGE;
 }
 
 uint8_t flash_verify_app_page(const uint32_t src, uint8_t *buf)
 {
     uint32_t readbuf[NVMCTRL_FLASH_PAGESIZE / 4] = {0};
-    uint32_t *cmpbuf = (uint32_t *)buf;
+    uint32_t *cmpbuf = (uint32_t *) buf;
     nvmctrl_read_page(readbuf, (uint32_t *) src);
     for (uint32_t i = 0; i < (NVMCTRL_FLASH_PAGESIZE / 4); i++) {
         if (cmpbuf[i] != readbuf[i])
@@ -101,7 +109,8 @@ uint8_t flash_erase_sector(uint8_t sector_num)
 // TODO: Erase 512 Bytes
 uint8_t flash_erase_app_all(void)
 {
-    for (uint32_t addr = USER_APP_START; addr < USER_APP_END; addr += NVMCTRL_FLASH_BLOCKSIZE) 
+    for (uint32_t addr = USER_APP_START; addr < USER_APP_END;
+         addr += NVMCTRL_FLASH_BLOCKSIZE)
         nvmctrl_erase_block(addr);
     return NVMCTRL_PROGE;
 }
